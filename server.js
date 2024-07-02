@@ -6,7 +6,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.get('/', (request, response) => {
+app.get('/api', (request, response) => {
   const ip = 
   request.headers['x-real-ip'] ||
   request.headers['x-forwarded-for'] ||
