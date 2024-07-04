@@ -1,23 +1,33 @@
 import express from 'express';
 import { publicIp } from 'public-ip';
-import fetch from 'node-fetch'; 
+import fetch from 'node-fetch';
 
 const app = express();
-const WEATHER_API_KEY = '385f48105fdf4d99bc4113759240207'; 
+const WEATHER_API_KEY = '385f48105fdf4d99bc4113759240207';
+
 app.get('/api/hello', async (req, res) => {
   try {
     const ipAddress = await publicIp();
     const visitorName = req.query.visitor_name || 'Guest';
 
-    // Fetch weather data for New York from WeatherAPI
-    const weatherResponse = await fetch(`http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=Lagos`);
-    const weatherData = await weatherResponse.json();
-    const temperature = weatherData.current.temp_c;
+    // Get client's location using IP API
+    const ipApiResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+    const ipData = await ipApiResponse.json();
+    const clientLocation = `${ipData.city}, ${ipData.region}, ${ipData.country_name}`;
 
-    res.send({
-      greeting: `Hello, ${visitorName}! The temperature is ${temperature} degrees Celsius in New York.`,
-      ipAddress: `Your public IP address is: ${ipAddress}`
-    });
+    // Fetch weather data for client's location from WeatherAPI
+    const weatherResponse = await fetch(`http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${clientLocation}`);
+    const weatherData = await weatherResponse.json();
+
+    if (weatherData.current) {
+      const temperature = weatherData.current.temp_c;
+      res.send({
+        greeting: `Hello, ${visitorName}! The temperature is ${temperature} degrees Celsius in ${clientLocation}.`,
+        ipAddress: `Your public IP address is: ${ipAddress}`
+      });
+    } else {
+      res.status(500).send('Error getting weather information');
+    }
   } catch (error) {
     res.status(500).send('Error getting public IP address or weather information');
   }
