@@ -10,20 +10,19 @@ app.get('/api/hello', async (req, res) => {
     const ipAddress = await publicIp();
     const visitorName = req.query.visitor_name || 'Guest';
 
-    // Get client's location using IP API
     const ipApiResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
     const ipData = await ipApiResponse.json();
-    const clientLocation = `${ipData.city}, ${ipData.region}, ${ipData.country_name}`;
+    const clientLocation = `${ipData.city}, ${ipData.region}`;
 
-    // Fetch weather data for client's location from WeatherAPI
-    const weatherResponse = await fetch(`http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${clientLocation}`);
+    const weatherResponse = await fetch(`http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${ipData.city}`);
     const weatherData = await weatherResponse.json();
 
     if (weatherData.current) {
       const temperature = weatherData.current.temp_c;
       res.send({
-        greeting: `Hello, ${visitorName}! The temperature is ${temperature} degrees Celsius in ${clientLocation}.`,
-        ipAddress: `Your public IP address is: ${ipAddress}`
+        client_ip: ipAddress,
+        location: ipData.city,
+        greeting: `Hello, ${visitorName}!, the temperature is ${temperature} degrees Celsius in ${ipData.city}`
       });
     } else {
       res.status(500).send('Error getting weather information');
