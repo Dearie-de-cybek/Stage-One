@@ -21,7 +21,6 @@ app.get('/api/hello', async (req, res) => {
     const ipAddress = await publicIp();
     const visitorName = req.query.visitor_name || 'Guest';
 
-    // Run IP API and Weather API calls concurrently
     const [ipApiResponse, weatherResponse] = await Promise.all([
       fetchWithTimeout(`https://ipapi.co/${ipAddress}/json/`),
       fetchWithTimeout(`http://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${ipAddress}`)
